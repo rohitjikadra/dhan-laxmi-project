@@ -16,6 +16,8 @@ type AdminUser = {
   isAdmin: boolean;
 };
 
+type AdminEntry = CaptureRecord & { email: string };
+
 function formatNum(value: number | null | undefined) {
   if (value == null) return "—";
   return value.toLocaleString("en-IN", { maximumFractionDigits: 2 });
@@ -24,15 +26,18 @@ function formatNum(value: number | null | undefined) {
 export default function AdminPage() {
   const router = useRouter();
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
-  const [captures, setCaptures] = useState<CaptureRecord[]>([]);
+  const [entries, setEntries] = useState<AdminEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const loadUsers = useCallback(async () => {
-    const data = await apiFetch<{ users: AdminUser[] }>("/api/admin/users");
-    setUsers(data.users);
+  const load = useCallback(async () => {
+    const [userData, entryData] = await Promise.all([
+      apiFetch<{ users: AdminUser[] }>("/api/admin/users"),
+      apiFetch<{ items: AdminEntry[] }>("/api/admin/captures"),
+    ]);
+    setUsers(userData.users);
+    setEntries(entryData.items);
   }, []);
 
   useEffect(() => {
@@ -40,7 +45,7 @@ export default function AdminPage() {
       router.replace("/login");
       return;
     }
-    loadUsers()
+    load()
       .catch((err) => {
         const message = err instanceof Error ? err.message : "Admin load failed";
         if (/unauthorized|expired|authenticator|admin must/i.test(message)) {
@@ -51,19 +56,62 @@ export default function AdminPage() {
         setError(message);
       })
       .finally(() => setLoading(false));
-  }, [loadUsers, router]);
+  }, [load, router]);
 
-  async function openUser(user: AdminUser) {
-    setSelected(user.id);
-    setSelectedEmail(user.email);
+  async function removeUserData(user: AdminUser) {
+    const ok = window.confirm(
+      `Delete all captures for ${user.email}? The account stays.`
+    );
+    if (!ok) return;
+    setBusyId(user.id);
     setError(null);
     try {
-      const data = await apiFetch<{ items: CaptureRecord[] }>(
-        `/api/admin/users/${encodeURIComponent(user.id)}/captures`
-      );
-      setCaptures(data.items);
+      await apiFetch(`/api/admin/users/${encodeURIComponent(user.id)}/captures`, {
+        method: "DELETE",
+      });
+      await load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not load captures");
+      setError(err instanceof Error ? err.message : "Could not delete data");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function removeUser(user: AdminUser) {
+    const ok = window.confirm(
+      `Delete ${user.email} and all of their captures? This cannot be undone.`
+    );
+    if (!ok) return;
+    setBusyId(user.id);
+    setError(null);
+    try {
+      await apiFetch(`/api/admin/users/${encodeURIComponent(user.id)}`, {
+        method: "DELETE",
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete user");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function removeEntry(entry: AdminEntry) {
+    const ok = window.confirm(
+      `Delete this entry for ${entry.email} (${entry.dlAccountId})?`
+    );
+    if (!ok) return;
+    setBusyId(entry.id);
+    setError(null);
+    try {
+      await apiFetch(`/api/admin/captures/${encodeURIComponent(entry.id)}`, {
+        method: "DELETE",
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not delete entry");
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -102,8 +150,8 @@ export default function AdminPage() {
       <div className={styles.main}>
         <h1 className={styles.title}>Admin</h1>
         <p className={styles.lead}>
-          One admin account. Google Authenticator is required at login. This
-          list is every website user and their saved captures.
+          Every website user and every saved capture. Deleting a user also
+          deletes that user's captures.
         </p>
         {error ? <p className={styles.error}>{error}</p> : null}
 
@@ -134,10 +182,22 @@ export default function AdminPage() {
                       <button
                         type="button"
                         className={`${styles.btn} ${styles.btnGhost}`}
-                        onClick={() => void openUser(user)}
+                        disabled={busyId === user.id || user.captureCount === 0}
+                        onClick={() => void removeUserData(user)}
                       >
-                        View
-                      </button>
+                        Delete data
+                      </button>{" "}
+                      {user.isAdmin ? null : (
+                        <button
+                          type="button"
+                          className={`${styles.btn} ${styles.btnGhost}`}
+                          style={{ color: "var(--danger)" }}
+                          disabled={busyId === user.id}
+                          onClick={() => void removeUser(user)}
+                        >
+                          Delete user
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -146,49 +206,57 @@ export default function AdminPage() {
           </div>
         )}
 
-        {selected ? (
-          <>
-            <h2 className={styles.cardTitle} style={{ marginTop: "1.5rem" }}>
-              Captures · {selectedEmail}
-            </h2>
-            {captures.length === 0 ? (
-              <p className={styles.empty}>No captures for this user.</p>
-            ) : (
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>Account</th>
-                      <th>Dates</th>
-                      <th>Business</th>
-                      <th>Turnover</th>
-                      <th>Updated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {captures.map((capture) => (
-                      <tr key={capture.id}>
-                        <td>
-                          {capture.dlAccountName || "—"} ({capture.dlAccountId})
-                        </td>
-                        <td>
-                          {capture.startDate || "—"} → {capture.endDate || "—"}
-                        </td>
-                        <td>{formatNum(capture.totalBusiness)}</td>
-                        <td>{formatNum(capture.turnover)}</td>
-                        <td>
-                          {new Date(
-                            capture.updatedAt || capture.createdAt
-                          ).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        ) : null}
+        <h2 className={styles.cardTitle} style={{ marginTop: "1.5rem" }}>
+          All entries
+        </h2>
+        {entries.length === 0 ? (
+          <p className={styles.empty}>No captures yet.</p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Account</th>
+                  <th>Dates</th>
+                  <th>Business</th>
+                  <th>Turnover</th>
+                  <th>Updated</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{entry.email}</td>
+                    <td>
+                      {entry.dlAccountName || "—"} ({entry.dlAccountId})
+                    </td>
+                    <td>
+                      {entry.startDate || "—"} → {entry.endDate || "—"}
+                    </td>
+                    <td>{formatNum(entry.totalBusiness)}</td>
+                    <td>{formatNum(entry.turnover)}</td>
+                    <td>
+                      {new Date(entry.updatedAt || entry.createdAt).toLocaleString()}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className={`${styles.btn} ${styles.btnGhost}`}
+                        style={{ color: "var(--danger)" }}
+                        disabled={busyId === entry.id}
+                        onClick={() => void removeEntry(entry)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
       <SiteFooter />
     </div>

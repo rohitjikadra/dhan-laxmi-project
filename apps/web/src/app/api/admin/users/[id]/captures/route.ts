@@ -28,3 +28,20 @@ export async function GET(req: NextRequest, ctx: Ctx) {
     items,
   });
 }
+
+export async function DELETE(req: NextRequest, ctx: Ctx) {
+  const auth = await requireAdmin(req);
+  if ("error" in auth) return auth.error;
+
+  const { id } = await ctx.params;
+  if (!id || id.length > 80) return jsonError("Invalid user");
+
+  const sql = await ensureDb();
+  const rows = await sql`SELECT id FROM users WHERE id = ${id}`;
+  if (!rows[0]) return jsonError("User not found", 404);
+
+  const deleted = await sql`
+    DELETE FROM captures WHERE user_id = ${id} RETURNING id
+  `;
+  return jsonOk({ ok: true, deleted: deleted.length });
+}
