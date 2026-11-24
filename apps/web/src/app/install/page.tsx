@@ -24,13 +24,24 @@ export default function InstallPage() {
         </p>
         <div className={styles.prose}>
           <h2>Download &amp; install</h2>
+          <p style={{ marginBottom: "1rem" }}>
+            <a
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              href="/api/extension/download"
+              download="dhanlaxmi-business-hub-extension.zip"
+            >
+              Download extension zip
+            </a>
+          </p>
+          <p className={styles.note}>
+            Agar button kaam na kare:{" "}
+            <a href="/extension/dhanlaxmi-business-hub-extension.zip">
+              direct zip link
+            </a>{" "}
+            → right-click → Save link as…
+          </p>
           <ol>
-            <li>
-              <a href="/extension/dhanlaxmi-business-hub-extension.zip" download>
-                Download extension zip
-              </a>
-            </li>
-            <li>Extract the zip to a folder on your computer</li>
+            <li>Zip download karke extract karo</li>
             <li>
               Chrome → <code>chrome://extensions</code> → Developer mode ON
             </li>
@@ -52,19 +63,6 @@ export default function InstallPage() {
             </li>
             <li>
               Popup → <strong>Calculate &amp; Save</strong>
-            </li>
-          </ol>
-          <h2>Dev (optional)</h2>
-          <ol>
-            <li>
-              Repo me <code>npm run build:extension</code>
-            </li>
-            <li>
-              Load unpacked → <code>apps/extension/dist</code>
-            </li>
-            <li>
-              Local API ke liye popup me API base{" "}
-              <code>http://localhost:3000</code> set karo
             </li>
           </ol>
           <p className={styles.note} style={{ marginTop: "1rem" }}>
