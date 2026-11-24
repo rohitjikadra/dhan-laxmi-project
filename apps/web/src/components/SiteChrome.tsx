@@ -3,12 +3,14 @@ import styles from "../app/ui.module.css";
 
 export function SiteNav({
   right,
+  brandHref = "/",
 }: {
   right?: React.ReactNode;
+  brandHref?: string;
 }) {
   return (
     <nav className={styles.nav}>
-      <Link href="/" className={styles.brand}>
+      <Link href={brandHref} className={styles.brand}>
         Dhanlaxmi Business Hub
       </Link>
       <div className={styles.navLinks}>

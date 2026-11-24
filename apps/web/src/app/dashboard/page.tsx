@@ -95,7 +95,7 @@ export default function DashboardPage() {
       style={{ display: "flex", flexDirection: "column" }}
     >
       <nav className={styles.nav}>
-        <Link href="/" className={styles.brand}>
+        <Link href="/dashboard" className={styles.brand}>
           Dhanlaxmi Business Hub
         </Link>
         <div className={styles.navLinks}>
