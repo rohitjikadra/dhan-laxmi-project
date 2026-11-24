@@ -1,0 +1,152 @@
+:root {
+  --bg: #f7f4ef;
+  --ink: #1a1a1a;
+  --muted: #5c5c5c;
+  --accent: #0b6e4f;
+  --border: #d9d2c5;
+  --danger: #9b1c1c;
+  --ok: #0b6e4f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  min-width: 320px;
+  max-width: 360px;
+}
+
+.wrap {
+  padding: 12px 14px 14px;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.disclaimer {
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.form,
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+input {
+  padding: 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 400;
+}
+
+button {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.ghost {
+  background: transparent;
+  color: var(--ink);
+}
+
+.status {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.preview {
+  margin: 0;
+  padding: 8px;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.advanced {
+  opacity: 0.85;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+.row button {
+  flex: 1;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+.foot {
+  margin: 4px 0 0;
+  font-size: 0.68rem;
+  color: var(--muted);
+  line-height: 1.3;
+}

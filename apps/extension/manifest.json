@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Dhanlaxmi Business Hub",
+  "version": "0.4.0",
+  "description": "Calculate Product Wise Business from Dhanlaxmi and save to your dashboard. Read-only; no passwords stored.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Calculate & Save"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://login.dhan-laxmi.co.in/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage", "activeTab", "tabs", "scripting"],
+  "host_permissions": [
+    "https://login.dhan-laxmi.co.in/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*"
+  ]
+}

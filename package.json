@@ -1,0 +1,23 @@
+{
+  "name": "dhanlaxmi-business-hub",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @dlbh/web",
+    "build:web": "npm run build -w @dlbh/web",
+    "dev:extension": "npm run build -w @dlbh/extension -- --watch",
+    "build:extension": "npm run build -w @dlbh/extension",
+    "zip:extension": "npm run zip -w @dlbh/extension",
+    "build:rules": "npm run build -w @dlbh/rules",
+    "build:shared": "npm run build -w @dlbh/shared",
+    "test:rules": "npm run test -w @dlbh/rules",
+    "typecheck": "npm run typecheck -w @dlbh/rules -w @dlbh/shared -w @dlbh/web -w @dlbh/extension"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dhanlaxmi Business Hub</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Business Hub</h1>
+      <p class="disclaimer">
+        Not affiliated with Dhanlaxmi. Read-only table calculate. Hum Dhanlaxmi
+        password store nahi karte — sirf tumhara website JWT.
+      </p>
+
+      <section id="auth-section" class="card">
+        <p id="auth-status" class="status">Checking login…</p>
+        <form id="login-form" class="form hidden">
+          <label>
+            Website email
+            <input id="email" type="email" required autocomplete="username" />
+          </label>
+          <label>
+            Website password
+            <input
+              id="password"
+              type="password"
+              required
+              minlength="8"
+              autocomplete="current-password"
+            />
+          </label>
+          <label class="advanced">
+            API base
+            <input id="api-base" type="url" placeholder="http://localhost:3000" />
+          </label>
+          <button id="login-btn" type="submit">Login</button>
+        </form>
+        <div id="authed-actions" class="row hidden">
+          <button id="logout-btn" type="button" class="ghost">Logout</button>
+          <button id="open-dash-btn" type="button" class="ghost">
+            Open dashboard
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <p class="hint">
+          Pehle Dhanlaxmi pe Product Wise Business → dates → <strong>Search</strong>,
+          phir yahan Calculate.
+        </p>
+        <label>
+          DL account id (auto / manual)
+          <input id="account-id" type="text" placeholder="e.g. 2048452" />
+        </label>
+        <label>
+          DL account name (optional)
+          <input id="account-name" type="text" placeholder="Display name" />
+        </label>
+        <button id="calc-btn" type="button">Calculate &amp; Save</button>
+      </section>
+
+      <p id="status" class="status"></p>
+      <pre id="preview" class="preview hidden"></pre>
+
+      <p class="foot">
+        Privacy: website pe /privacy · Install: /install
+      </p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

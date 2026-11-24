@@ -1,0 +1,79 @@
+.page {
+  --bg: #f3efe6;
+  --ink: #14201a;
+  --muted: #4a564f;
+  --accent: #0b6e4f;
+  --border: #d5cbb8;
+  --card: rgba(255, 255, 255, 0.55);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #d9e8df 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #e8dfc9 0%, transparent 50%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: 40rem;
+  padding: 3rem 1.5rem;
+  margin: 0 auto;
+}
+
+.brand {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.main h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
+  line-height: 1.2;
+  font-weight: 650;
+}
+
+.lead {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.secondary {
+  border: 1px solid #d5cbb8;
+  color: var(--ink);
+}
+
