@@ -1,8 +1,10 @@
+import { PRODUCTION_WEBSITE_URL } from "@dlbh/shared";
+
 const TOKEN_KEY = "token";
 const API_BASE_KEY = "apiBase";
 const EMAIL_KEY = "email";
 
-export const DEFAULT_API_BASE = "http://localhost:3000";
+export const DEFAULT_API_BASE = PRODUCTION_WEBSITE_URL;
 
 export async function getApiBase(): Promise<string> {
   const data = await chrome.storage.local.get(API_BASE_KEY);

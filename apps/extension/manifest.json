@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Dhanlaxmi Business Hub",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Calculate Product Wise Business from Dhanlaxmi and save to your dashboard. Read-only; no passwords stored.",
   "action": {
     "default_popup": "popup.html",
@@ -21,6 +21,8 @@
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "host_permissions": [
     "https://login.dhan-laxmi.co.in/*",
+    "https://dhanlaxmi-business-hub.vercel.app/*",
+    "https://dhanlaxmi-business-hub-justme-3a9d.vercel.app/*",
     "http://localhost:3000/*",
     "http://127.0.0.1:3000/*"
   ]

@@ -36,7 +36,11 @@ Thumbs.db
 
 # extension zip / packaged
 *.zip
+!apps/web/public/extension/*.zip
 apps/extension/dist/
+
+# Vercel local link
+.vercel/
 
 # misc
 coverage/

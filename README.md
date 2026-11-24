@@ -88,10 +88,13 @@ npm run build:extension          # Load unpacked → apps/extension/dist
 npm run zip:extension            # → apps/extension/dhanlaxmi-business-hub-extension.zip
 ```
 
-1. `npm run dev:web`  
-2. Popup me website login  
-3. Dhanlaxmi → Product Wise Business → Search  
-4. **Calculate & Save**  
+**Production website:** https://dhanlaxmi-business-hub.vercel.app  
+Extension default API base = same URL. Zip download: `/extension/dhanlaxmi-business-hub-extension.zip` (see `/install`).
+
+1. Register/login on production site  
+2. Install extension (zip / Load unpacked)  
+3. Popup me same account login  
+4. Dhanlaxmi → Product Wise Business → Search → **Calculate & Save**  
 
 Pages: `/install` · `/privacy` · `/about` · `/dashboard` · `/accounts/[id]`  
 
