@@ -5,6 +5,12 @@ export type UserRow = {
   email: string;
   password_hash: string;
   created_at: string;
+  totp_secret: string | null;
+  totp_enabled: boolean;
+  totp_enabled_at: string | null;
+  totp_challenge_jti: string | null;
+  totp_challenge_fails: number;
+  totp_last_step: number | null;
 };
 
 export type CaptureRow = {
@@ -27,9 +33,12 @@ export type CaptureRow = {
 
 type Sql = NeonQueryFunction<false, false>;
 
+const SCHEMA_VERSION = 2;
+
 type GlobalDb = {
   __dlbhSql?: Sql;
   __dlbhMigrated?: Promise<void>;
+  __dlbhSchema?: number;
 };
 
 function getDatabaseUrl(): string {
@@ -61,6 +70,17 @@ async function migrate() {
     CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_idx
       ON users (LOWER(email))
   `;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret TEXT`;
+  await sql`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT FALSE
+  `;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled_at TEXT`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_challenge_jti TEXT`;
+  await sql`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS totp_challenge_fails INTEGER NOT NULL DEFAULT 0
+  `;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_last_step INTEGER`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS captures (
@@ -113,8 +133,13 @@ export function getSql(): Sql {
 export async function ensureDb(): Promise<Sql> {
   const g = globalThis as unknown as GlobalDb;
   const sql = getSql();
-  if (!g.__dlbhMigrated) {
-    g.__dlbhMigrated = migrate();
+  if (!g.__dlbhMigrated || g.__dlbhSchema !== SCHEMA_VERSION) {
+    g.__dlbhSchema = SCHEMA_VERSION;
+    g.__dlbhMigrated = migrate().catch((err) => {
+      g.__dlbhMigrated = undefined;
+      g.__dlbhSchema = undefined;
+      throw err;
+    });
   }
   await g.__dlbhMigrated;
   return sql;

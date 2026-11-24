@@ -1,5 +1,5 @@
 import { calculateBusiness, defaultRules } from "@dlbh/rules";
-import { login, saveCapture } from "./api.js";
+import { login, saveCapture, verifyTotp } from "./api.js";
 import { MSG_EXTRACT, type ExtractResponse } from "./messages.js";
 import {
   clearSession,
@@ -14,6 +14,9 @@ const DHAN_HOST = "login.dhan-laxmi.co.in";
 
 const authStatus = el<HTMLElement>("auth-status");
 const loginForm = el<HTMLFormElement>("login-form");
+const totpForm = el<HTMLFormElement>("totp-form");
+const totpCodeInput = el<HTMLInputElement>("totp-code");
+const totpCancel = el<HTMLButtonElement>("totp-cancel");
 const logoutBtn = el<HTMLButtonElement>("logout-btn");
 const openDashBtn = el<HTMLButtonElement>("open-dash-btn");
 const authedActions = el<HTMLElement>("authed-actions");
@@ -25,6 +28,9 @@ const accountNameInput = el<HTMLInputElement>("account-name");
 const calcBtn = el<HTMLButtonElement>("calc-btn");
 const statusEl = el<HTMLElement>("status");
 const previewEl = el<HTMLElement>("preview");
+
+let pendingChallenge: string | null = null;
+let pendingEmail: string | null = null;
 
 function el<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id);
@@ -51,11 +57,13 @@ async function refreshAuthUi() {
   if (token && email) {
     authStatus.textContent = `Logged in: ${email}`;
     loginForm.classList.add("hidden");
+    totpForm.classList.add("hidden");
     authedActions.classList.remove("hidden");
   } else {
     authStatus.textContent =
       "Website login required before Save (Calculate preview bina login bhi).";
     loginForm.classList.remove("hidden");
+    totpForm.classList.add("hidden");
     authedActions.classList.add("hidden");
   }
 }
@@ -68,6 +76,23 @@ loginForm.addEventListener("submit", async (e) => {
       await setApiBase(apiBaseInput.value.trim());
     }
     const data = await login(emailInput.value.trim(), passwordInput.value);
+    if ("needsTotpSetup" in data && data.needsTotpSetup) {
+      setStatus(
+        "Admin 2FA abhi set nahi. Website /login pe QR scan karo, phir yahan code se login.",
+        "error"
+      );
+      return;
+    }
+    if ("needsTotp" in data && data.needsTotp) {
+      pendingChallenge = data.challengeToken;
+      pendingEmail = data.email;
+      loginForm.classList.add("hidden");
+      totpForm.classList.remove("hidden");
+      totpCodeInput.value = "";
+      setStatus("Google Authenticator ka 6-digit code dalo.");
+      return;
+    }
+    if (!("token" in data) || !data.token) throw new Error("Login failed");
     await setSession(data.token, data.user.email);
     passwordInput.value = "";
     setStatus("Login OK.", "ok");
@@ -75,6 +100,35 @@ loginForm.addEventListener("submit", async (e) => {
   } catch (err) {
     setStatus(err instanceof Error ? err.message : "Login failed", "error");
   }
+});
+
+totpForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!pendingChallenge || !pendingEmail) {
+    setStatus("Code expired. Dubara login karo.", "error");
+    return;
+  }
+  setStatus("Checking code…");
+  try {
+    const data = await verifyTotp(pendingChallenge, totpCodeInput.value.trim());
+    await setSession(data.token, data.user.email || pendingEmail);
+    pendingChallenge = null;
+    pendingEmail = null;
+    totpCodeInput.value = "";
+    passwordInput.value = "";
+    setStatus("Login OK.", "ok");
+    await refreshAuthUi();
+  } catch (err) {
+    setStatus(err instanceof Error ? err.message : "Code rejected", "error");
+  }
+});
+
+totpCancel.addEventListener("click", async () => {
+  pendingChallenge = null;
+  pendingEmail = null;
+  totpCodeInput.value = "";
+  setStatus("");
+  await refreshAuthUi();
 });
 
 logoutBtn.addEventListener("click", async () => {

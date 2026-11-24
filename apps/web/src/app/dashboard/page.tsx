@@ -21,6 +21,7 @@ function formatNum(value: number | null | undefined) {
 export default function DashboardPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [summary, setSummary] = useState<CapturesSummaryResponse["items"]>([]);
   const [captures, setCaptures] = useState<CaptureRecord[]>([]);
   const [filterId, setFilterId] = useState<string | "all">("all");
@@ -29,8 +30,11 @@ export default function DashboardPage() {
   const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async () => {
-    const me = await apiFetch<{ user: { email: string } }>("/api/me");
+    const me = await apiFetch<{ user: { email: string; isAdmin?: boolean } }>(
+      "/api/me"
+    );
     setEmail(me.user.email);
+    setIsAdmin(Boolean(me.user.isAdmin));
     const [sum, list] = await Promise.all([
       apiFetch<CapturesSummaryResponse>("/api/captures/summary"),
       apiFetch<CapturesListResponse>("/api/captures"),
@@ -99,6 +103,11 @@ export default function DashboardPage() {
           Dhanlaxmi Business Hub
         </Link>
         <div className={styles.navLinks}>
+          {isAdmin ? (
+            <Link href="/admin" className={styles.muted}>
+              Admin
+            </Link>
+          ) : null}
           <Link href="/install" className={styles.muted}>
             Install
           </Link>

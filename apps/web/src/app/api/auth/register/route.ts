@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextRequest } from "next/server";
-import { signToken } from "@/lib/auth";
+import { isAdminEmail, signToken } from "@/lib/auth";
 import { ensureDb } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/http";
 import { hashPassword } from "@/lib/password";
@@ -37,6 +37,10 @@ export async function POST(req: NextRequest) {
     INSERT INTO users (id, email, password_hash, created_at)
     VALUES (${id}, ${email}, ${passwordHash}, ${createdAt})
   `;
+
+  if (isAdminEmail(email)) {
+    return jsonOk({ needsTotpSetup: true, user: { id, email } }, 201);
+  }
 
   const token = await signToken({ id, email });
   return jsonOk({ token, user: { id, email } }, 201);

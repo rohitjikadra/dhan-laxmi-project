@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PRODUCTION_WEBSITE_URL } from "@dlbh/shared";
+import { AuthCta } from "@/components/AuthCta";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
 import styles from "../ui.module.css";
 
@@ -10,13 +11,7 @@ export const metadata = {
 export default function InstallPage() {
   return (
     <div className={styles.shell} style={{ display: "flex", flexDirection: "column" }}>
-      <SiteNav
-        right={
-          <Link href="/dashboard" className={`${styles.btn} ${styles.btnGhost}`}>
-            Dashboard
-          </Link>
-        }
-      />
+      <SiteNav right={<AuthCta guest="both" />} />
       <div className={styles.main}>
         <h1 className={styles.title}>Install Chrome extension</h1>
         <p className={styles.lead}>

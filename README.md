@@ -96,7 +96,7 @@ Extension default API base = same URL. Zip download: `/extension/dhanlaxmi-busin
 3. Popup me same account login  
 4. Dhanlaxmi → Product Wise Business → Search → **Calculate & Save**  
 
-Pages: `/install` · `/privacy` · `/about` · `/dashboard` · `/accounts/[id]`  
+Pages: `/install` · `/privacy` · `/about` · `/dashboard` · `/accounts/[id]` · `/admin`  
 
 ### v1 acceptance
 
@@ -112,7 +112,7 @@ Pages: `/install` · `/privacy` · `/about` · `/dashboard` · `/accounts/[id]`
 ### Phase 2 local check
 
 1. Neon: `neon login` → `neon deploy` (root `.env.local` pulls `DATABASE_URL`)  
-2. Copy Neon vars into `apps/web/.env.local` + set `JWT_SECRET` (see `.env.example`)  
+2. Copy Neon vars into `apps/web/.env.local` + set `JWT_SECRET` and `ADMIN_EMAIL` (see `.env.example`)  
 3. `npm run dev:web` → [http://localhost:3000](http://localhost:3000)  
 4. Register → Dashboard → capture upsert test  
 

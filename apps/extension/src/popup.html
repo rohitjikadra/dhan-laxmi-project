@@ -41,6 +41,21 @@
           </label>
           <button id="login-btn" type="submit">Login</button>
         </form>
+        <form id="totp-form" class="form hidden">
+          <label>
+            Authenticator code
+            <input
+              id="totp-code"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="7"
+              required
+            />
+          </label>
+          <button type="submit">Verify</button>
+          <button id="totp-cancel" type="button" class="ghost">Back</button>
+        </form>
         <div id="authed-actions" class="row hidden">
           <button id="logout-btn" type="button" class="ghost">Logout</button>
           <button id="open-dash-btn" type="button" class="ghost">

@@ -32,13 +32,29 @@ async function request<T>(
   return data;
 }
 
+export type WebsiteLogin =
+  | { token: string; user: { id: string; email: string } }
+  | { needsTotp: true; challengeToken: string; email: string }
+  | { needsTotpSetup: true; setupToken: string; email: string };
+
 export async function login(
   email: string,
   password: string
-): Promise<{ token: string; user: { id: string; email: string } }> {
+): Promise<WebsiteLogin> {
   return request(
     "/api/auth/login",
     { method: "POST", body: JSON.stringify({ email, password }) },
+    false
+  );
+}
+
+export async function verifyTotp(
+  challengeToken: string,
+  code: string
+): Promise<{ token: string; user: { id: string; email: string } }> {
+  return request(
+    "/api/auth/totp",
+    { method: "POST", body: JSON.stringify({ challengeToken, code }) },
     false
   );
 }

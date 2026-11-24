@@ -1,5 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest } from "next/server";
-import { signToken } from "@/lib/auth";
+import {
+  isAdminEmail,
+  signSessionToken,
+  signTotpChallenge,
+  signTotpSetup,
+} from "@/lib/auth";
 import { ensureDb, type UserRow } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/http";
 import { verifyPassword } from "@/lib/password";
@@ -34,6 +40,36 @@ export async function POST(req: NextRequest) {
   const ok = await verifyPassword(password, user.password_hash);
   if (!ok) return jsonError("Invalid email or password", 401);
 
-  const token = await signToken({ id: user.id, email: user.email });
+  if (isAdminEmail(user.email)) {
+    if (!user.totp_enabled) {
+      const setupToken = await signTotpSetup({
+        id: user.id,
+        email: user.email,
+      });
+      return jsonOk({
+        needsTotpSetup: true,
+        setupToken,
+        email: user.email,
+      });
+    }
+
+    const jti = randomUUID();
+    await sql`
+      UPDATE users
+      SET totp_challenge_jti = ${jti}, totp_challenge_fails = 0
+      WHERE id = ${user.id}
+    `;
+    const challengeToken = await signTotpChallenge(
+      { id: user.id, email: user.email },
+      jti
+    );
+    return jsonOk({
+      needsTotp: true,
+      challengeToken,
+      email: user.email,
+    });
+  }
+
+  const token = await signSessionToken({ id: user.id, email: user.email });
   return jsonOk({ token, user: { id: user.id, email: user.email } });
 }

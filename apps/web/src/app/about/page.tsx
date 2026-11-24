@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { AuthCta } from "@/components/AuthCta";
 import { SiteFooter, SiteNav } from "@/components/SiteChrome";
 import styles from "../ui.module.css";
 
@@ -9,13 +9,7 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <div className={styles.shell} style={{ display: "flex", flexDirection: "column" }}>
-      <SiteNav
-        right={
-          <Link href="/register" className={`${styles.btn} ${styles.btnPrimary}`}>
-            Register
-          </Link>
-        }
-      />
+      <SiteNav right={<AuthCta guest="register" />} />
       <div className={styles.main}>
         <h1 className={styles.title}>About</h1>
         <p className={styles.lead}>
