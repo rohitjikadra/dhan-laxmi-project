@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { NextRequest } from "next/server";
-import { getDb, type UserRow } from "./db";
+import { ensureDb, type UserRow } from "./db";
 
 const TOKEN_TTL = "30d";
 
@@ -62,9 +62,11 @@ export async function requireUser(
     };
   }
 
-  const row = getDb()
-    .prepare("SELECT id, email FROM users WHERE id = ?")
-    .get(auth.id) as Pick<UserRow, "id" | "email"> | undefined;
+  const sql = await ensureDb();
+  const rows = await sql`
+    SELECT id, email FROM users WHERE id = ${auth.id}
+  `;
+  const row = rows[0] as Pick<UserRow, "id" | "email"> | undefined;
 
   if (!row) {
     return {

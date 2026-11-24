@@ -9,6 +9,7 @@ import type {
   CapturesSummaryResponse,
 } from "@dlbh/shared";
 import { apiFetch, clearToken, getToken } from "@/lib/client-auth";
+import { downloadCapturesExcel } from "@/lib/download-excel";
 import { SiteFooter } from "@/components/SiteChrome";
 import styles from "../ui.module.css";
 
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [filterId, setFilterId] = useState<string | "all">("all");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async () => {
     const me = await apiFetch<{ user: { email: string } }>("/api/me");
@@ -63,6 +65,18 @@ export default function DashboardPage() {
   function logout() {
     clearToken();
     router.push("/login");
+  }
+
+  async function onExport() {
+    setExporting(true);
+    setError(null);
+    try {
+      await downloadCapturesExcel(filterId === "all" ? undefined : filterId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Excel export failed");
+    } finally {
+      setExporting(false);
+    }
   }
 
   if (loading) {
@@ -174,7 +188,17 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <h2 className={styles.cardTitle}>Captures</h2>
+        <div className={styles.sectionHead}>
+          <h2 className={styles.cardTitle}>Captures</h2>
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.btnGhost}`}
+            disabled={exporting || filtered.length === 0}
+            onClick={() => void onExport()}
+          >
+            {exporting ? "Exporting…" : "Export Excel"}
+          </button>
+        </div>
         {summary.length > 0 ? (
           <div className={styles.filterRow}>
             <button

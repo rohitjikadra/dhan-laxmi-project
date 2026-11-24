@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { CaptureRecord, CapturesListResponse } from "@dlbh/shared";
 import { apiFetch, clearToken, getToken } from "@/lib/client-auth";
+import { downloadCapturesExcel } from "@/lib/download-excel";
 import { SiteFooter } from "@/components/SiteChrome";
 import styles from "../../ui.module.css";
 
@@ -20,6 +21,7 @@ export default function AccountPage() {
   const [items, setItems] = useState<CaptureRecord[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async () => {
     const list = await apiFetch<CapturesListResponse>(
@@ -44,6 +46,18 @@ export default function AccountPage() {
 
   const name = items[0]?.dlAccountName;
 
+  async function onExport() {
+    setExporting(true);
+    setError(null);
+    try {
+      await downloadCapturesExcel(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Excel export failed");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <div
       className={styles.shell}
@@ -60,7 +74,17 @@ export default function AccountPage() {
         </div>
       </nav>
       <div className={styles.main}>
-        <h1 className={styles.title}>{name || id}</h1>
+        <div className={styles.sectionHead}>
+          <h1 className={styles.title}>{name || id}</h1>
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.btnGhost}`}
+            disabled={loading || exporting || items.length === 0}
+            onClick={() => void onExport()}
+          >
+            {exporting ? "Exporting…" : "Export Excel"}
+          </button>
+        </div>
         <p className={styles.lead}>Account id: {id}</p>
         {error ? <p className={styles.error}>{error}</p> : null}
         {loading ? (

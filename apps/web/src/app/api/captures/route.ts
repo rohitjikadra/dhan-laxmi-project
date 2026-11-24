@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if ("error" in auth) return auth.error;
 
   const { searchParams } = req.nextUrl;
-  const items = listCaptures(auth.user.id, {
+  const items = await listCaptures(auth.user.id, {
     dlAccountId: searchParams.get("dlAccountId") || undefined,
     startDate: searchParams.get("startDate") || undefined,
     endDate: searchParams.get("endDate") || undefined,
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     turnover = t;
   }
 
-  const capture = upsertCapture(auth.user.id, {
+  const capture = await upsertCapture(auth.user.id, {
     dlAccountId,
     dlAccountName: dlAccountName ?? null,
     startDate: startDate ?? null,

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { signToken } from "@/lib/auth";
-import { getDb, type UserRow } from "@/lib/db";
+import { ensureDb, type UserRow } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/http";
 import { verifyPassword } from "@/lib/password";
 import { normalizeEmail, validatePassword } from "@/lib/validate";
@@ -23,9 +23,11 @@ export async function POST(req: NextRequest) {
     return jsonError("Email and password required");
   }
 
-  const user = getDb()
-    .prepare("SELECT * FROM users WHERE email = ?")
-    .get(email) as UserRow | undefined;
+  const sql = await ensureDb();
+  const rows = await sql`
+    SELECT * FROM users WHERE LOWER(email) = LOWER(${email})
+  `;
+  const user = rows[0] as UserRow | undefined;
 
   if (!user) return jsonError("Invalid email or password", 401);
 

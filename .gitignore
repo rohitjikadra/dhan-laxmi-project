@@ -42,3 +42,4 @@ apps/extension/dist/
 coverage/
 .turbo/
 *.log
+.neon

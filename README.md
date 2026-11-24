@@ -21,8 +21,8 @@ packages/shared/    # API types + constants
 | Auth | Custom email + password + JWT (Phase 2) |
 | Captures | Upsert same `(user, dl_account_id, start, end)` |
 | Extension distribute | Manual Load unpacked / `.zip` pehle |
-| Hosting | TBD (local abhi; baad me Vercel + Postgres) |
-| DB | Phase 2 me SQLite MVP → Postgres production |
+| Hosting | TBD (local abhi; baad me Vercel) |
+| DB | Neon Postgres (`DATABASE_URL`) |
 
 ## Prerequisites
 
@@ -77,7 +77,7 @@ npm run build:extension
 
 - [x] **Phase 0** — monorepo scaffold  
 - [x] **Phase 1** — `@dlbh/rules` (`calculateBusiness` + tests)  
-- [x] **Phase 2** — auth + `/api/captures` + dashboard (SQLite)  
+- [x] **Phase 2** — auth + `/api/captures` + dashboard (Neon Postgres)  
 - [x] **Phase 3** — extension extract → calculate → save  
 - [x] **Phase 4** — polish, privacy/about/install, zip  
 
@@ -108,9 +108,10 @@ Pages: `/install` · `/privacy` · `/about` · `/dashboard` · `/accounts/[id]`
 
 ### Phase 2 local check
 
-1. `apps/web/.env.local` me `JWT_SECRET` set (`.env.example` dekho)  
-2. `npm run dev:web` → [http://localhost:3000](http://localhost:3000)  
-3. Register → Dashboard → **Add sample capture** (upsert same account+dates)  
+1. Neon: `neon login` → `neon deploy` (root `.env.local` pulls `DATABASE_URL`)  
+2. Copy Neon vars into `apps/web/.env.local` + set `JWT_SECRET` (see `.env.example`)  
+3. `npm run dev:web` → [http://localhost:3000](http://localhost:3000)  
+4. Register → Dashboard → capture upsert test  
 
 
 Rules docs: [`packages/rules/RULES.md`](./packages/rules/RULES.md)  

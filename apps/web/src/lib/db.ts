@@ -1,6 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
-import Database from "better-sqlite3";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
 export type UserRow = {
   id: string;
@@ -27,24 +25,44 @@ export type CaptureRow = {
   updated_at: string;
 };
 
-type GlobalDb = { __dlbhDb?: Database.Database };
+type Sql = NeonQueryFunction<false, false>;
 
-function resolveDbPath(): string {
-  const configured = process.env.DATABASE_PATH || "./data/dlbh.sqlite";
-  return path.isAbsolute(configured)
-    ? configured
-    : path.join(process.cwd(), configured);
+type GlobalDb = {
+  __dlbhSql?: Sql;
+  __dlbhMigrated?: Promise<void>;
+};
+
+function getDatabaseUrl(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error(
+      "DATABASE_URL missing — set Neon Postgres connection string in .env.local"
+    );
+  }
+  return url;
 }
 
-function migrate(db: Database.Database) {
-  db.exec(`
+/** Direct (non-pooled) URL for DDL/migrations when available. */
+function getMigrateUrl(): string {
+  return process.env.DATABASE_URL_UNPOOLED || getDatabaseUrl();
+}
+
+async function migrate() {
+  const sql = neon(getMigrateUrl());
+  await sql`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
-      email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+      email TEXT NOT NULL,
       password_hash TEXT NOT NULL,
       created_at TEXT NOT NULL
-    );
+    )
+  `;
+  await sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS users_email_lower_idx
+      ON users (LOWER(email))
+  `;
 
+  await sql`
     CREATE TABLE IF NOT EXISTS captures (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -53,34 +71,51 @@ function migrate(db: Database.Database) {
       start_date TEXT,
       end_date TEXT,
       business_date TEXT,
-      total_business REAL NOT NULL,
-      turnover REAL,
+      total_business DOUBLE PRECISION NOT NULL,
+      turnover DOUBLE PRECISION,
       ignored_products TEXT NOT NULL DEFAULT '[]',
       half_products TEXT NOT NULL DEFAULT '[]',
       details TEXT NOT NULL DEFAULT '[]',
       source TEXT NOT NULL DEFAULT 'extension',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
-    );
+    )
+  `;
 
+  await sql`
     CREATE UNIQUE INDEX IF NOT EXISTS captures_upsert_idx
-      ON captures (user_id, dl_account_id, IFNULL(start_date, ''), IFNULL(end_date, ''));
-
-    CREATE INDEX IF NOT EXISTS captures_user_idx ON captures (user_id);
-    CREATE INDEX IF NOT EXISTS captures_account_idx ON captures (user_id, dl_account_id);
-  `);
+      ON captures (
+        user_id,
+        dl_account_id,
+        COALESCE(start_date, ''),
+        COALESCE(end_date, '')
+      )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS captures_user_idx ON captures (user_id)
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS captures_account_idx
+      ON captures (user_id, dl_account_id)
+  `;
 }
 
-export function getDb(): Database.Database {
+export function getSql(): Sql {
   const g = globalThis as unknown as GlobalDb;
-  if (!g.__dlbhDb) {
-    const dbPath = resolveDbPath();
-    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-    const db = new Database(dbPath);
-    db.pragma("journal_mode = WAL");
-    db.pragma("foreign_keys = ON");
-    migrate(db);
-    g.__dlbhDb = db;
+  if (!g.__dlbhSql) {
+    // Pooled URL for serverless / Next.js request queries
+    g.__dlbhSql = neon(getDatabaseUrl());
   }
-  return g.__dlbhDb;
+  return g.__dlbhSql;
+}
+
+/** Ensure schema exists (idempotent). Call before first query in a request path. */
+export async function ensureDb(): Promise<Sql> {
+  const g = globalThis as unknown as GlobalDb;
+  const sql = getSql();
+  if (!g.__dlbhMigrated) {
+    g.__dlbhMigrated = migrate();
+  }
+  await g.__dlbhMigrated;
+  return sql;
 }

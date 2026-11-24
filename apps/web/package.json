@@ -12,8 +12,9 @@
   "dependencies": {
     "@dlbh/rules": "*",
     "@dlbh/shared": "*",
+    "@neondatabase/serverless": "^1.2.1",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^13.2.0",
+    "exceljs": "^4.4.0",
     "jose": "^6.2.18",
     "next": "^15.5.7",
     "react": "^19.0.0",
@@ -22,7 +23,6 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/bcryptjs": "^2.4.6",
-    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

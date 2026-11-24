@@ -300,3 +300,17 @@
   color: var(--accent);
   font-weight: 650;
 }
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.sectionHead h2,
+.sectionHead h1 {
+  margin: 0;
+}

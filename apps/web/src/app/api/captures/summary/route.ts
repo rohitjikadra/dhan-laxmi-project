@@ -8,5 +8,5 @@ export const runtime = "nodejs";
 export async function GET(req: NextRequest) {
   const auth = await requireUser(req);
   if ("error" in auth) return auth.error;
-  return jsonOk({ items: summarizeCaptures(auth.user.id) });
+  return jsonOk({ items: await summarizeCaptures(auth.user.id) });
 }
